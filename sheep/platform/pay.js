@@ -263,25 +263,22 @@ export default class SheepPay {
       return;
     }
 
-    // 解析支付参数
-    let payConfig = JSON.parse(data.displayContent);
-    if(typeof payConfig.appId === 'undefined'){
-      payConfig.appId = payConfig.appid;
-    }
-    if(typeof payConfig.nonceStr === 'undefined'){
-      payConfig.nonceStr = payConfig.noncestr;
-    }
-    if(typeof payConfig.timeStamp === 'undefined'){
-      payConfig.timeStamp = payConfig.timestamp;
-    }
+    // 解析支付参数，App 端需使用 orderInfo（键名全小写），同时兼容后端V2/V3密钥返回的字段名不一致情况
+    // TODO @芋艿：【优化】需要优化下，可以参考 https://uniapp.dcloud.net.cn/api/plugins/payment.html#%E5%BE%AE%E4%BF%A1app%E6%94%AF%E4%BB%98
+    const payConfig = JSON.parse(data.displayContent);
+    const orderInfo = {
+      appid: payConfig.appid || payConfig.appId,
+      partnerid: payConfig.partnerid || payConfig.partnerId,
+      prepayid: payConfig.prepayid || payConfig.prepayId,
+      package: payConfig.package || payConfig.packageValue || 'Sign=WXPay',
+      noncestr: payConfig.noncestr || payConfig.nonceStr,
+      timestamp: payConfig.timestamp || payConfig.timeStamp,
+      sign: payConfig.sign,
+    };
     // 调用微信支付
     uni.requestPayment({
       provider: 'wxpay',
-      timeStamp: payConfig.timeStamp,
-      nonceStr: payConfig.nonceStr,
-      package: payConfig.packageValue,
-      signType: payConfig.signType,
-      paySign: payConfig.paySign,
+      orderInfo,
       success: (res) => {
         that.payResult('success');
       },
