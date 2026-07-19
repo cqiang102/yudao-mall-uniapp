@@ -255,16 +255,16 @@ export default class SheepPay {
 
   // 微信支付（App）
   async wechatAppPay() {
-    let that = this;
     // 获取预支付信息
-    let { code, data } = await this.prepay('wx_app');
+    const { code, data } = await this.prepay('wx_app');
     if (code !== 0) {
       sheep.$helper.toast('获取支付信息失败');
       return;
     }
 
-    // 解析支付参数，App 端需使用 orderInfo（键名全小写），同时兼容后端V2/V3密钥返回的字段名不一致情况
-    // TODO @芋艿：【优化】需要优化下，可以参考 https://uniapp.dcloud.net.cn/api/plugins/payment.html#%E5%BE%AE%E4%BF%A1app%E6%94%AF%E4%BB%98
+    // App 微信支付与小程序的参数结构不同：Android、iOS 必须通过 orderInfo 传递，且键名需全小写
+    // 后端微信支付 V2、V3 返回的字段命名不一致，因此在此统一转换
+    // 参考：https://uniapp.dcloud.net.cn/api/plugins/payment.html#%E5%BE%AE%E4%BF%A1app%E6%94%AF%E4%BB%98
     const payConfig = JSON.parse(data.displayContent);
     const orderInfo = {
       appid: payConfig.appid || payConfig.appId,
@@ -272,22 +272,22 @@ export default class SheepPay {
       prepayid: payConfig.prepayid || payConfig.prepayId,
       package: payConfig.package || payConfig.packageValue || 'Sign=WXPay',
       noncestr: payConfig.noncestr || payConfig.nonceStr,
-      timestamp: payConfig.timestamp || payConfig.timeStamp,
+      timestamp: Number(payConfig.timestamp || payConfig.timeStamp),
       sign: payConfig.sign,
     };
     // 调用微信支付
     uni.requestPayment({
       provider: 'wxpay',
       orderInfo,
-      success: (res) => {
-        that.payResult('success');
+      success: () => {
+        this.payResult('success');
       },
       fail: (err) => {
         if (err.errMsg === 'requestPayment:fail cancel') {
           sheep.$helper.toast('支付已手动取消');
         } else {
           sheep.$helper.toast('支付失败：' + err.errMsg);
-          that.payResult('fail');
+          this.payResult('fail');
         }
       },
     });
