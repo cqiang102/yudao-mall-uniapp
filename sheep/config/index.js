@@ -35,6 +35,8 @@ export const staticUrl = import.meta.env.SHOPRO_STATIC_URL;
 export const tenantId = import.meta.env.SHOPRO_TENANT_ID;
 export const websocketPath = import.meta.env.SHOPRO_WEBSOCKET_PATH;
 export const h5Url = import.meta.env.SHOPRO_H5_URL;
+// 餐饮专属：芋道后台【支付管理 - 应用信息】中餐饮 PayApp 的 appKey
+export const appKey = import.meta.env.SHOPRO_RESTAURANT_APP_KEY || 'RESTAURANT_APP_KEY';
 
 export default {
   baseUrl,
@@ -43,4 +45,5 @@ export default {
   tenantId,
   websocketPath,
   h5Url,
+  appKey,
 };

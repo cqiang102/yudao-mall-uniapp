@@ -603,6 +603,74 @@
 			]
 		},
 		{
+			"root": "pages/restaurant",
+			"pages": [{
+					"path": "menu",
+					"style": {
+						"navigationBarTitleText": "扫码点餐"
+					},
+					"meta": {
+						"auth": false,
+						"title": "扫码点餐"
+					}
+				},
+				{
+					"path": "order-confirm",
+					"style": {
+						"navigationBarTitleText": "确认订单"
+					},
+					"meta": {
+						"auth": true,
+						"title": "确认订单"
+					}
+				},
+				{
+					"path": "order-detail",
+					"style": {
+						"navigationBarTitleText": "订单详情"
+					},
+					"meta": {
+						"auth": true,
+						"title": "订单详情"
+					}
+				},
+				{
+					"path": "order-list",
+					"style": {
+						"navigationBarTitleText": "我的订单",
+						"enablePullDownRefresh": true
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "餐饮订单"
+					}
+				},
+				{
+					"path": "member",
+					"style": {
+						"navigationBarTitleText": "会员中心"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "会员中心"
+					}
+				},
+				{
+					"path": "recharge",
+					"style": {
+						"navigationBarTitleText": "会员储值"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "会员储值"
+					}
+				}
+			]
+		},
+		{
 			"root": "pages/activity",
 			"pages": [{
 					"path": "groupon/detail",
