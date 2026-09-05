@@ -39,6 +39,7 @@
       <view class="menu">
         <view class="menu-item" @tap="goRecharge">会员储值</view>
         <view class="menu-item" @tap="goOrder">我的订单</view>
+        <view class="menu-item" @tap="goAddress">收货地址</view>
         <view class="menu-item" @tap="goMenu">扫码点餐</view>
       </view>
     </view>
@@ -105,6 +106,9 @@ function goOrder() {
 }
 function goMenu() {
   sheep.$router.redirect('/pages/restaurant/menu');
+}
+function goAddress() {
+  sheep.$router.go('/pages/restaurant/address-list');
 }
 </script>
 

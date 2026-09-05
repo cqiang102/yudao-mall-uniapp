@@ -667,6 +667,27 @@
 						"sync": true,
 						"title": "会员储值"
 					}
+				},
+				{
+					"path": "address-list",
+					"style": {
+						"navigationBarTitleText": "收货地址"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "收货地址"
+					}
+				},
+				{
+					"path": "address-edit",
+					"style": {
+						"navigationBarTitleText": "编辑地址"
+					},
+					"meta": {
+						"auth": true,
+						"title": "编辑地址"
+					}
 				}
 			]
 		},
