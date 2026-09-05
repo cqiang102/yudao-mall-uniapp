@@ -699,6 +699,27 @@
 						"sync": true,
 						"title": "会员卡"
 					}
+				},
+				{
+					"path": "store-login",
+					"style": {
+						"navigationBarTitleText": "门店工作台登录"
+					},
+					"meta": {
+						"auth": false,
+						"title": "门店工作台登录"
+					}
+				},
+				{
+					"path": "store-workbench",
+					"style": {
+						"navigationBarTitleText": "门店工作台",
+						"enablePullDownRefresh": true
+					},
+					"meta": {
+						"auth": false,
+						"title": "门店工作台"
+					}
 				}
 			]
 		},
