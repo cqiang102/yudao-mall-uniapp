@@ -20,19 +20,18 @@
         </view>
       </view>
 
-      <!-- 外卖收货信息 -->
+      <!-- 外卖收货信息（从地址簿选择，M-23 pick 模式回填） -->
       <view class="card" v-if="orderType === 3">
-        <view class="row">
-          <text class="label">收货人</text>
-          <input v-model="receiver.name" placeholder="请输入收货人姓名" />
-        </view>
-        <view class="row">
-          <text class="label">手机号</text>
-          <input v-model="receiver.phone" placeholder="请输入手机号" />
-        </view>
-        <view class="row">
-          <text class="label">地址</text>
-          <input v-model="receiver.address" placeholder="请输入收货地址" />
+        <view class="addr-pick" @tap="pickAddress">
+          <view v-if="receiver.name" class="addr-info">
+            <view class="addr-row1">
+              <text class="addr-name">{{ receiver.name }}</text>
+              <text class="addr-phone">{{ receiver.phone }}</text>
+            </view>
+            <text class="addr-detail">{{ receiver.address }}</text>
+          </view>
+          <view v-else class="addr-empty">📍 请选择收货地址</view>
+          <text class="addr-change">{{ receiver.name ? '更换 >' : '' }}</text>
         </view>
         <view class="delivery-fee" v-if="deliveryFee > 0">
           配送费 ¥{{ (deliveryFee / 100).toFixed(2) }}
@@ -105,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onLoad } from 'vue';
+import { ref, reactive, computed, onLoad, onUnload } from 'vue';
 import sheep from '@/sheep';
 import { appKey } from '@/sheep/config';
 import RestaurantOrderApi from '@/sheep/api/restaurant/order';
@@ -113,6 +112,7 @@ import RestaurantStoreApi from '@/sheep/api/restaurant/store';
 import RestaurantMemberApi from '@/sheep/api/restaurant/member';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
 import RestaurantCouponApi from '@/sheep/api/restaurant/coupon';
+import RestaurantAddressApi from '@/sheep/api/restaurant/address';
 
 const submitting = ref(false);
 const previewItems = ref([]);
@@ -138,6 +138,24 @@ const typeOptions = [
 const deliveryFee = ref(0);
 const minOrderAmount = ref(0);
 const receiver = reactive({ name: '', phone: '', address: '' });
+
+// 地址簿联动（M-23 pick 模式）：跳地址簿选择 → uni.$on 回填
+function pickAddress() {
+  sheep.$router.go('/pages/restaurant/address-list', { pick: 1 });
+}
+function onAddressPicked(addr) {
+  receiver.name = addr.name || '';
+  receiver.phone = addr.phone || '';
+  receiver.address = [addr.region, addr.detail].filter(Boolean).join(' ');
+}
+// 切外卖时自动带出默认地址（地址簿 defaultStatus===1 优先，否则取第一条）
+async function loadDefaultAddress() {
+  if (receiver.name) return;
+  const res = await RestaurantAddressApi.getMyList();
+  if (res.code !== 0 || !res.data?.length) return;
+  const def = res.data.find((a) => a.defaultStatus === 1) || res.data[0];
+  onAddressPicked(def);
+}
 
 // 优惠券
 const showCoupons = ref(false);
@@ -176,6 +194,10 @@ async function switchType(t) {
   if (t === 3 && deliveryFee.value === 0) {
     await loadStore();
   }
+  // 切外卖自动带出默认地址
+  if (t === 3 && userId) {
+    await loadDefaultAddress();
+  }
 }
 
 async function loadStore() {
@@ -207,8 +229,17 @@ onLoad(async (options) => {
     await loadMyCoupons();
     await loadWallet();
   }
-  // 外卖默认拉取配送费
-  if (orderType.value === 3) await loadStore();
+  // 外卖默认拉取配送费 + 默认地址
+  if (orderType.value === 3) {
+    await loadStore();
+    if (userId) await loadDefaultAddress();
+  }
+  // 地址簿选择回传（onUnload 注销，防重复注册与泄漏）
+  uni.$on('address-picked', onAddressPicked);
+});
+
+onUnload(() => {
+  uni.$off('address-picked', onAddressPicked);
 });
 
 async function loadMyCoupons() {
@@ -259,7 +290,7 @@ async function submit() {
   }
   if (orderType.value === 3) {
     if (!receiver.name || !receiver.phone || !receiver.address) {
-      uni.showToast({ title: '请填写收货信息', icon: 'none' });
+      uni.showToast({ title: '请选择收货地址', icon: 'none' });
       return;
     }
     if (minOrderAmount.value > 0 && goodsTotal.value < minOrderAmount.value) {
@@ -330,6 +361,14 @@ async function submit() {
 .row input { flex: 1; font-size: 28rpx; }
 .delivery-fee { font-size: 24rpx; color: #fa5151; margin-top: 8rpx; }
 .min-tip { color: #999; }
+.addr-pick { display: flex; align-items: center; justify-content: space-between; padding: 8rpx 0; }
+.addr-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.addr-row1 { display: flex; align-items: center; gap: 16rpx; margin-bottom: 8rpx; }
+.addr-name { font-size: 30rpx; font-weight: 600; }
+.addr-phone { font-size: 26rpx; color: #666; }
+.addr-detail { font-size: 26rpx; color: #666; line-height: 1.5; }
+.addr-empty { flex: 1; font-size: 28rpx; color: #999; }
+.addr-change { flex-shrink: 0; margin-left: 20rpx; font-size: 24rpx; color: #fa8c16; }
 .item { display: flex; align-items: center; padding: 12rpx 0; font-size: 28rpx; }
 .item .pic { width: 88rpx; height: 88rpx; border-radius: 8rpx; background: #eee; margin-right: 16rpx; }
 .item .meta { flex: 1; display: flex; flex-direction: column; }
