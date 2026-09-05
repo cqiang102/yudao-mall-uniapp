@@ -12,6 +12,22 @@
         <text class="scan-btn" @tap="scanCode">扫桌码点餐</text>
       </view>
 
+      <!-- 门店轮播图（M-29）：后台「餐饮管理-轮播图」配置，仅展示启用项，按 sort 倒序 -->
+      <swiper
+        v-if="banners.length"
+        class="banner"
+        :indicator-dots="banners.length > 1"
+        indicator-color="rgba(255,255,255,0.6)"
+        indicator-active-color="#fa5151"
+        autoplay
+        circular
+        :interval="4000"
+      >
+        <swiper-item v-for="b in banners" :key="b.id" @tap="onBannerTap(b)">
+          <image class="banner-img" :src="b.image" mode="aspectFill" />
+        </swiper-item>
+      </swiper>
+
       <view class="layout">
         <!-- 左侧分类 -->
         <scroll-view class="cats" scroll-y>
@@ -103,12 +119,14 @@
 import { ref, reactive, computed, onLoad } from 'vue';
 import sheep from '@/sheep';
 import RestaurantDishApi from '@/sheep/api/restaurant/dish';
+import RestaurantBannerApi from '@/sheep/api/restaurant/banner';
 
 const storeId = ref(null);
 const tableId = ref(null);
 const activeCat = ref(null);
 const categories = ref([]);
 const dishes = ref([]);
+const banners = ref([]);
 // 购物车：每个元素是一个「菜品 + 规格/加料组合」的独立行
 const cartList = reactive([]);
 
@@ -291,6 +309,35 @@ async function loadData() {
     if (categories.value.length) activeCat.value = categories.value[0].id;
   }
   if (dRes.code === 0) dishes.value = dRes.data || [];
+  // 轮播图单独拉取，失败时静默降级，绝不影响点餐主流程
+  loadBanners();
+}
+
+async function loadBanners() {
+  try {
+    const res = await RestaurantBannerApi.getBannerList();
+    if (res.code === 0) banners.value = res.data || [];
+    else banners.value = [];
+  } catch (e) {
+    banners.value = [];
+  }
+}
+
+// linkType: 1 菜品 2 门店 3 外链
+function onBannerTap(b) {
+  if (!b || !b.linkType || !b.linkValue) return;
+  if (b.linkType === 3) {
+    // 外链：$router.go 识别 http 前缀会自动走 webview（H5 端直接跳转）
+    sheep.$router.go(b.linkValue);
+    return;
+  }
+  if (b.linkType === 1) {
+    // 菜品：切到该菜品所属分类，帮用户直接定位
+    const dish = dishes.value.find((d) => String(d.id) === String(b.linkValue));
+    if (dish) activeCat.value = dish.categoryId;
+    return;
+  }
+  // linkType 2（门店）：MVP 阶段 C 端无门店详情页，暂不跳转
 }
 </script>
 
@@ -312,6 +359,10 @@ async function loadData() {
 .qty { display: flex; align-items: center; gap: 16rpx; }
 .cart-bar { display: flex; align-items: center; justify-content: space-between; padding: 16rpx 24rpx; background: #fff; border-top: 1rpx solid #eee; }
 .empty { text-align: center; color: #999; padding: 80rpx 0; }
+
+/* 轮播图（M-29） */
+.banner { height: 260rpx; margin: 16rpx 24rpx 0; border-radius: 12rpx; overflow: hidden; }
+.banner-img { width: 100%; height: 100%; display: block; }
 
 .spec-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; display: flex; align-items: flex-end; }
 .spec-sheet { width: 100%; background: #fff; border-radius: 20rpx 20rpx 0 0; padding: 28rpx; max-height: 80vh; overflow-y: auto; }
