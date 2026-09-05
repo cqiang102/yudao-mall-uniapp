@@ -688,6 +688,17 @@
 						"auth": true,
 						"title": "编辑地址"
 					}
+				},
+				{
+					"path": "member-card",
+					"style": {
+						"navigationBarTitleText": "会员卡"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "会员卡"
+					}
 				}
 			]
 		},
