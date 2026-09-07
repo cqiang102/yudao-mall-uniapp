@@ -113,6 +113,7 @@ import RestaurantMemberApi from '@/sheep/api/restaurant/member';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
 import RestaurantCouponApi from '@/sheep/api/restaurant/coupon';
 import RestaurantAddressApi from '@/sheep/api/restaurant/address';
+import { requestOrderSubscribe } from '@/sheep/api/restaurant/notify';
 
 const submitting = ref(false);
 const previewItems = ref([]);
@@ -298,6 +299,9 @@ async function submit() {
       return;
     }
   }
+  // M-12：订阅引导（须在用户点击处理中调用，微信规定不能放 onLoad/onShow）。
+  // 弹出授权框后无论 accept/reject 均继续下单，不阻断主流程
+  await requestOrderSubscribe();
   submitting.value = true;
   try {
     // 1) 创建订单（优惠券归属与用户归属由后端从登录态校验并算价）
