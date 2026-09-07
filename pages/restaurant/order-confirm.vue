@@ -18,6 +18,29 @@
         <view class="type-tip" v-else-if="orderType === 2">
           到店自取 · 凭订单号取餐
         </view>
+        <view class="type-tip" v-else-if="orderType === 4">
+          预约到店 · 按预约时间备餐，凭核销码取货
+        </view>
+      </view>
+
+      <!-- 预约时间选择（M-17） -->
+      <view class="card" v-if="orderType === 4">
+        <picker
+          mode="date"
+          :start="today"
+          @change="onReserveDateChange"
+        >
+          <view class="reserve-row">
+            <text class="reserve-label">预约日期</text>
+            <text class="reserve-value">{{ reserveDate || '请选择日期' }}</text>
+          </view>
+        </picker>
+        <picker mode="time" @change="onReserveTimeChange">
+          <view class="reserve-row">
+            <text class="reserve-label">预约时间</text>
+            <text class="reserve-value">{{ reserveTimeHM || '请选择时间' }}</text>
+          </view>
+        </picker>
       </view>
 
       <!-- 外卖收货信息（从地址簿选择，M-23 pick 模式回填） -->
@@ -133,7 +156,19 @@ const typeOptions = [
   { value: 1, label: '堂食' },
   { value: 2, label: '自取' },
   { value: 3, label: '外卖' },
+  { value: 4, label: '预约' },
 ];
+
+// 预约（M-17）：日期 + 时间拆开选，提交时拼成 ISO LocalDateTime
+const today = new Date().toISOString().slice(0, 10);
+const reserveDate = ref('');
+const reserveTimeHM = ref('');
+function onReserveDateChange(e) { reserveDate.value = e.detail.value; }
+function onReserveTimeChange(e) { reserveTimeHM.value = e.detail.value; }
+function buildReserveTime() {
+  if (!reserveDate.value || !reserveTimeHM.value) return null;
+  return `${reserveDate.value}T${reserveTimeHM.value}:00`;
+}
 
 // 外卖配送
 const deliveryFee = ref(0);
@@ -299,6 +334,17 @@ async function submit() {
       return;
     }
   }
+  // 预约单：必须选预约时间（M-17）
+  if (orderType.value === 4) {
+    if (!buildReserveTime()) {
+      uni.showToast({ title: '请选择预约日期与时间', icon: 'none' });
+      return;
+    }
+    if (new Date(buildReserveTime()) <= new Date()) {
+      uni.showToast({ title: '预约时间需晚于当前', icon: 'none' });
+      return;
+    }
+  }
   // M-12：订阅引导（须在用户点击处理中调用，微信规定不能放 onLoad/onShow）。
   // 弹出授权框后无论 accept/reject 均继续下单，不阻断主流程
   await requestOrderSubscribe();
@@ -312,6 +358,7 @@ async function submit() {
       memberId: memberProfile.value?.id,
       couponId: selectedCoupon.value ? selectedCoupon.value.id : null,
       remark: remark.value,
+      reserveTime: orderType.value === 4 ? buildReserveTime() : null,
       receiverName: orderType.value === 3 ? receiver.name : null,
       receiverPhone: orderType.value === 3 ? receiver.phone : null,
       receiverAddress: orderType.value === 3 ? receiver.address : null,
