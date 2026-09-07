@@ -615,6 +615,16 @@
 					}
 				},
 				{
+					"path": "point-shop",
+					"style": {
+						"navigationBarTitleText": "积分商城"
+					},
+					"meta": {
+						"auth": true,
+						"title": "积分商城"
+					}
+				},
+				{
 					"path": "order-confirm",
 					"style": {
 						"navigationBarTitleText": "确认订单"
