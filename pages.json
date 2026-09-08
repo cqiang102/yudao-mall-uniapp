@@ -615,6 +615,16 @@
 					}
 				},
 				{
+					"path": "user-center",
+					"style": {
+						"navigationBarTitleText": "用户中心"
+					},
+					"meta": {
+						"auth": true,
+						"title": "用户中心"
+					}
+				},
+				{
 					"path": "store-list",
 					"style": {
 						"navigationBarTitleText": "门店"

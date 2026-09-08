@@ -38,15 +38,41 @@
 
       <!-- 我的服务：后端可配置（M-24），接口为空/失败时回退内置默认项 -->
       <view class="menu">
-        <view
-          class="menu-item"
-          v-for="item in portalMenus"
-          :key="item.id || item.path"
-          @tap="goPortal(item)"
-        >
+        <view class="menu-item" @tap="goConsume">
+          <text class="mi-icon">📊</text><text class="mi-name">历史消费</text><text class="mi-arrow">›</text>
+        </view>
+        <view class="menu-item" v-for="item in portalMenus" :key="item.id || item.path" @tap="goPortal(item)">
           <text class="mi-icon" v-if="item.icon">{{ item.icon }}</text>
           <text class="mi-name">{{ item.name }}</text>
           <text class="mi-arrow">›</text>
+        </view>
+        <view class="menu-item" @tap="showService = true">
+          <text class="mi-icon">🎧</text><text class="mi-name">联系客服</text><text class="mi-arrow">›</text>
+        </view>
+        <view class="menu-item" @tap="goHelp('help')">
+          <text class="mi-icon">❓</text><text class="mi-name">帮助中心</text><text class="mi-arrow">›</text>
+        </view>
+        <view class="menu-item" @tap="goHelp('about')">
+          <text class="mi-icon">ℹ️</text><text class="mi-name">关于我们</text><text class="mi-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 客服弹层（C-12）：拨号 + 复制微信 -->
+      <view class="mask" v-if="showService" @tap="showService = false">
+        <view class="sheet" @tap.stop>
+          <text class="sheet-title">联系客服</text>
+          <view class="sheet-row" @tap="callService" v-if="storeInfo.phone">
+            <text>📞 电话客服：{{ storeInfo.phone }}</text>
+            <text class="sheet-act">拨打</text>
+          </view>
+          <view class="sheet-row" @tap="copyWechat" v-if="storeInfo.serviceWechat">
+            <text>💬 微信客服：{{ storeInfo.serviceWechat }}</text>
+            <text class="sheet-act">复制</text>
+          </view>
+          <view class="sheet-empty" v-if="!storeInfo.phone && !storeInfo.serviceWechat">
+            当前门店未配置客服联系方式
+          </view>
+          <view class="sheet-cancel" @tap="showService = false">取消</view>
         </view>
       </view>
     </view>
@@ -61,6 +87,7 @@ import RestaurantMemberApi from '@/sheep/api/restaurant/member';
 import RestaurantCouponApi from '@/sheep/api/restaurant/coupon';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
 import RestaurantPortalMenuApi from '@/sheep/api/restaurant/portalmenu';
+import RestaurantStoreApi from '@/sheep/api/restaurant/store';
 
 // 内置兜底：后端无配置（或接口失败）时展示，保证「我的」页永不空白
 const DEFAULT_MENUS = [
@@ -123,6 +150,40 @@ function goPortal(item) {
   sheep.$router.go(p);
 }
 
+// ========== 用户中心（C-12） ==========
+const showService = ref(false);
+const storeInfo = ref({});
+
+// 进入页面时顺带拉门店客服信息（有 storeId 才拉，失败静默）
+async function loadStoreService() {
+  const sid = uni.getStorageSync('restaurant-store-id');
+  if (!sid) return;
+  try {
+    const res = await RestaurantStoreApi.getStore(sid);
+    if (res.code === 0) storeInfo.value = res.data || {};
+  } catch (e) {
+    // 静默
+  }
+}
+loadStoreService();
+
+function goConsume() {
+  sheep.$router.go('/pages/restaurant/user-center?type=consume');
+}
+function goHelp(t) {
+  sheep.$router.go(`/pages/restaurant/user-center?type=${t}`);
+}
+function callService() {
+  if (storeInfo.value.phone) uni.makePhoneCall({ phoneNumber: storeInfo.value.phone });
+}
+function copyWechat() {
+  if (!storeInfo.value.serviceWechat) return;
+  uni.setClipboardData({
+    data: storeInfo.value.serviceWechat,
+    success: () => uni.showToast({ title: '微信号已复制', icon: 'success' }),
+  });
+}
+
 async function loadWallet() {
   // userId 由后端登录态注入，前端不传
   const res = await RestaurantWalletApi.getWallet(2);
@@ -183,5 +244,13 @@ function goCard() {
 .mi-icon { margin-right: 16rpx; font-size: 32rpx; }
 .mi-name { flex: 1; }
 .mi-arrow { color: #ccc; font-size: 32rpx; }
+/* 客服弹层（C-12） */
+.mask { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; display: flex; align-items: flex-end; }
+.sheet { width: 100%; background: #fff; border-radius: 24rpx 24rpx 0 0; padding: 32rpx 32rpx calc(32rpx + env(safe-area-inset-bottom)); }
+.sheet-title { display: block; text-align: center; font-size: 30rpx; font-weight: 600; margin-bottom: 24rpx; }
+.sheet-row { display: flex; justify-content: space-between; align-items: center; padding: 24rpx 0; border-bottom: 1rpx solid #f5f5f5; font-size: 28rpx; }
+.sheet-act { color: #fa5151; }
+.sheet-empty { text-align: center; color: #999; font-size: 26rpx; padding: 24rpx 0; }
+.sheet-cancel { text-align: center; padding: 28rpx 0 0; font-size: 28rpx; color: #999; }
 .loading { text-align: center; color: #999; padding: 120rpx 0; }
 </style>
