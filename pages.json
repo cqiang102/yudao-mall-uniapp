@@ -615,6 +615,16 @@
 					}
 				},
 				{
+					"path": "notice",
+					"style": {
+						"navigationBarTitleText": "公告"
+					},
+					"meta": {
+						"auth": true,
+						"title": "公告"
+					}
+				},
+				{
 					"path": "user-center",
 					"style": {
 						"navigationBarTitleText": "用户中心"
