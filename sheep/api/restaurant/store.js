@@ -11,6 +11,20 @@ const RestaurantStoreApi = {
       method: 'GET',
     });
   },
+  // 门店列表（C-14）：传经纬度时按距离升序并返回 distanceKm
+  getStoreList: (latitude, longitude) => {
+    const params = {};
+    if (latitude != null && longitude != null) {
+      params.latitude = latitude;
+      params.longitude = longitude;
+    }
+    return request({
+      url: '/member/store/list',
+      method: 'GET',
+      params,
+      custom: { showLoading: false },
+    });
+  },
 };
 
 export default RestaurantStoreApi;

@@ -615,6 +615,16 @@
 					}
 				},
 				{
+					"path": "store-list",
+					"style": {
+						"navigationBarTitleText": "门店"
+					},
+					"meta": {
+						"auth": false,
+						"title": "门店"
+					}
+				},
+				{
 					"path": "point-shop",
 					"style": {
 						"navigationBarTitleText": "积分商城"
