@@ -1,5 +1,34 @@
 <template>
   <s-layout title="门店">
+    <!-- 首页装修（M-02）：banner / 金刚区 / 推荐菜品位，按 sort 渲染 -->
+    <view v-if="decorList.length" class="decor">
+      <template v-for="d in decorList" :key="d.id">
+        <swiper v-if="d.type === 1" class="d-banner" circular autoplay indicator-dots>
+          <swiper-item @tap="goDecorLink(d)">
+            <image :src="d.image" mode="aspectFill" class="d-banner-img" />
+          </swiper-item>
+        </swiper>
+        <view v-else-if="d.type === 2" class="d-quick">
+          <view class="d-quick-item" @tap="goDecorLink(d)">
+            <image v-if="d.image" :src="d.image" mode="aspectFill" class="d-quick-img" />
+            <text v-else class="d-quick-emoji">⭐</text>
+            <text class="d-quick-name">{{ d.title }}</text>
+          </view>
+        </view>
+        <view v-else-if="d.type === 3" class="d-reco">
+          <text class="d-reco-title">{{ d.title }}</text>
+          <scroll-view scroll-x class="d-reco-scroll">
+            <view class="d-reco-row">
+              <view v-for="dish in recoDishes" :key="dish.id" class="d-reco-item">
+                <image v-if="dish.image" :src="dish.image" mode="aspectFill" class="d-reco-img" />
+                <text class="d-reco-name">{{ dish.name }}</text>
+                <text class="d-reco-price">¥{{ ((dish.price || 0) / 100).toFixed(2) }}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+      </template>
+    </view>
     <view class="store-list">
       <view v-for="s in list" :key="s.id" class="store-card">
         <view class="s-top">
@@ -40,8 +69,47 @@
 import { ref, onLoad } from 'vue';
 import sheep from '@/sheep';
 import RestaurantStoreApi from '@/sheep/api/restaurant/store';
+import RestaurantHomeDecorApi from '@/sheep/api/restaurant/homedecor';
+import request from '@/sheep/request';
 
 const list = ref([]);
+
+// ========== 首页装修（M-02） ==========
+const decorList = ref([]);
+const recoDishes = ref([]);
+const sid = uni.getStorageSync('restaurant-store-id') || 0;
+
+async function loadDecor() {
+  if (!sid) return;
+  try {
+    const res = await RestaurantHomeDecorApi.getList(sid);
+    if (res.code === 0) {
+      decorList.value = res.data || [];
+      // 有推荐菜品位 → 拉本店菜品（前 8 个）
+      if (decorList.value.some((d) => d.type === 3)) {
+        const dishRes = await request({
+          url: '/member/dish/simple-list',
+          method: 'GET',
+          params: { storeId: sid },
+          custom: { showLoading: false },
+        });
+        if (dishRes.code === 0) recoDishes.value = (dishRes.data || []).slice(0, 8);
+      }
+    }
+  } catch (e) {
+    // 装修失败不影响门店列表
+  }
+}
+loadDecor();
+
+function goDecorLink(d) {
+  if (!d.link) return;
+  if (d.link.startsWith('http')) {
+    sheep.$router.go('/pages/public/webview', { url: d.link });
+    return;
+  }
+  sheep.$router.go(d.link);
+}
 
 onLoad(async () => {
   await load();
@@ -95,6 +163,23 @@ function order(s) {
 
 <style lang="scss" scoped>
 .store-list { padding: 20rpx; }
+/* 首页装修（M-02） */
+.decor { padding: 0 20rpx; }
+.d-banner { height: 280rpx; border-radius: 12rpx; overflow: hidden; margin-bottom: 20rpx; }
+.d-banner-img { width: 100%; height: 100%; }
+.d-quick { display: flex; background: #fff; border-radius: 12rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.d-quick-item { width: 120rpx; text-align: center; }
+.d-quick-img { width: 80rpx; height: 80rpx; border-radius: 16rpx; }
+.d-quick-emoji { font-size: 56rpx; }
+.d-quick-name { display: block; font-size: 24rpx; margin-top: 8rpx; }
+.d-reco { background: #fff; border-radius: 12rpx; padding: 24rpx; margin-bottom: 20rpx; }
+.d-reco-title { display: block; font-size: 30rpx; font-weight: 600; margin-bottom: 16rpx; }
+.d-reco-scroll { white-space: nowrap; }
+.d-reco-row { display: inline-flex; }
+.d-reco-item { display: inline-block; width: 160rpx; margin-right: 16rpx; text-align: center; }
+.d-reco-img { width: 160rpx; height: 160rpx; border-radius: 12rpx; }
+.d-reco-name { display: block; font-size: 24rpx; margin-top: 8rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.d-reco-price { color: #fa5151; font-size: 24rpx; }
 .store-card { background: #fff; border-radius: 12rpx; padding: 24rpx; margin-bottom: 20rpx; }
 .s-top { display: flex; justify-content: space-between; align-items: center; }
 .s-name { font-size: 32rpx; font-weight: 600; }
