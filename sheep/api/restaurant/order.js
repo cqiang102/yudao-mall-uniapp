@@ -118,6 +118,20 @@ const RestaurantOrderApi = {
     });
   },
 
+  // 取消订单（消费者发起，C-15 预约取消；后端校验归属 + 仅未支付可取消）
+  cancelOrder: (orderId) => {
+    return request({
+      url: '/member/order/cancel',
+      method: 'POST',
+      params: { orderId },
+      custom: {
+        showSuccess: true,
+        successMsg: '已取消',
+        loadingMsg: '取消中',
+      },
+    });
+  },
+
   // 申请退款（消费者发起，原路退回）
   // orderId 必填；reason 选填
   applyRefund: (orderId, reason) => {

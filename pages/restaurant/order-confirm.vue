@@ -35,7 +35,24 @@
             <text class="reserve-value">{{ reserveDate || '请选择日期' }}</text>
           </view>
         </picker>
-        <picker mode="time" @change="onReserveTimeChange">
+        <!-- 时段：优先用后端预约规则（M-09，含剩余可约人数）；门店未配置规则时回退自由时间选择 -->
+        <view v-if="slots.length" class="slot-wrap">
+          <text class="reserve-label">可预约时段</text>
+          <view class="slot-list">
+            <view
+              v-for="s in slots"
+              :key="s.time"
+              class="slot"
+              :class="{ 'slot-on': reserveTimeHM === s.time, 'slot-off': !s.available }"
+              @tap="pickSlot(s)"
+            >
+              <text>{{ s.time }}</text>
+              <text class="slot-remain" v-if="s.available">余{{ s.remain }}</text>
+              <text class="slot-remain" v-else>约满</text>
+            </view>
+          </view>
+        </view>
+        <picker v-else mode="time" @change="onReserveTimeChange">
           <view class="reserve-row">
             <text class="reserve-label">预约时间</text>
             <text class="reserve-value">{{ reserveTimeHM || '请选择时间' }}</text>
@@ -137,6 +154,7 @@ import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
 import RestaurantCouponApi from '@/sheep/api/restaurant/coupon';
 import RestaurantAddressApi from '@/sheep/api/restaurant/address';
 import { requestOrderSubscribe } from '@/sheep/api/restaurant/notify';
+import RestaurantReserveApi from '@/sheep/api/restaurant/reserve';
 
 const submitting = ref(false);
 const previewItems = ref([]);
@@ -163,8 +181,34 @@ const typeOptions = [
 const today = new Date().toISOString().slice(0, 10);
 const reserveDate = ref('');
 const reserveTimeHM = ref('');
-function onReserveDateChange(e) { reserveDate.value = e.detail.value; }
+function onReserveDateChange(e) {
+  reserveDate.value = e.detail.value;
+  reserveTimeHM.value = '';
+  loadSlots();
+}
 function onReserveTimeChange(e) { reserveTimeHM.value = e.detail.value; }
+
+// 预约时段（M-09/C-15）：拉门店当天可用时段（已扣减已预约人数）
+const slots = ref([]);
+async function loadSlots() {
+  slots.value = [];
+  if (!storeId.value || !reserveDate.value) return;
+  try {
+    const res = await RestaurantReserveApi.getSlots(storeId.value, reserveDate.value);
+    if (res.code === 0 && Array.isArray(res.data) && res.data.length) {
+      slots.value = res.data;
+    }
+  } catch (e) {
+    // 接口失败：回退自由时间选择，不阻断下单
+  }
+}
+function pickSlot(s) {
+  if (!s.available) {
+    uni.showToast({ title: '该时段已约满', icon: 'none' });
+    return;
+  }
+  reserveTimeHM.value = s.time;
+}
 function buildReserveTime() {
   if (!reserveDate.value || !reserveTimeHM.value) return null;
   return `${reserveDate.value}T${reserveTimeHM.value}:00`;
@@ -442,4 +486,16 @@ async function submit() {
 .footer .discount { color: #fa5151; font-size: 22rpx; }
 .footer .total { font-size: 32rpx; font-weight: 700; }
 .loading { text-align: center; color: #999; padding: 120rpx 0; }
+/* 预约（M-17/M-09） */
+.reserve-row { display: flex; align-items: center; justify-content: space-between; padding: 20rpx 0; border-bottom: 1rpx solid #f5f5f5; }
+.reserve-label { font-size: 28rpx; color: #333; }
+.reserve-value { font-size: 28rpx; color: #999; }
+.slot-wrap { padding: 8rpx 0; }
+.slot-wrap .reserve-label { display: block; padding: 12rpx 0 16rpx; }
+.slot-list { display: flex; flex-wrap: wrap; }
+.slot { min-width: 150rpx; padding: 14rpx 18rpx; margin: 0 16rpx 16rpx 0; border: 1rpx solid #eee; border-radius: 8rpx; text-align: center; font-size: 26rpx; background: #fff; }
+.slot-on { border-color: #fa5151; color: #fa5151; background: #fff5f5; }
+.slot-off { color: #ccc; background: #fafafa; }
+.slot-remain { display: block; font-size: 22rpx; color: #999; margin-top: 4rpx; }
+.slot-on .slot-remain { color: #fa5151; }
 </style>
