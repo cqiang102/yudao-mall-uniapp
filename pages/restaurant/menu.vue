@@ -273,6 +273,10 @@ onLoad((options) => {
     storeId.value = options.storeId ? Number(options.storeId) : null;
     tableId.value = options.tableId ? Number(options.tableId) : null;
   }
+  // 记住最近进入的门店，供「我的」页（个人中心菜单按店配置）使用
+  if (storeId.value) {
+    uni.setStorageSync('restaurant-store-id', storeId.value);
+  }
   loadData();
 });
 

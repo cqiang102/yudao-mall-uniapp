@@ -36,12 +36,18 @@
         <view v-if="!myCoupons.length" class="empty">暂无优惠券</view>
       </view>
 
+      <!-- 我的服务：后端可配置（M-24），接口为空/失败时回退内置默认项 -->
       <view class="menu">
-        <view class="menu-item" @tap="goRecharge">会员储值</view>
-        <view class="menu-item" @tap="goCard">会员卡</view>
-        <view class="menu-item" @tap="goOrder">我的订单</view>
-        <view class="menu-item" @tap="goAddress">收货地址</view>
-        <view class="menu-item" @tap="goMenu">扫码点餐</view>
+        <view
+          class="menu-item"
+          v-for="item in portalMenus"
+          :key="item.id || item.path"
+          @tap="goPortal(item)"
+        >
+          <text class="mi-icon" v-if="item.icon">{{ item.icon }}</text>
+          <text class="mi-name">{{ item.name }}</text>
+          <text class="mi-arrow">›</text>
+        </view>
       </view>
     </view>
     <view v-else class="loading">加载中…</view>
@@ -54,6 +60,18 @@ import sheep from '@/sheep';
 import RestaurantMemberApi from '@/sheep/api/restaurant/member';
 import RestaurantCouponApi from '@/sheep/api/restaurant/coupon';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
+import RestaurantPortalMenuApi from '@/sheep/api/restaurant/portalmenu';
+
+// 内置兜底：后端无配置（或接口失败）时展示，保证「我的」页永不空白
+const DEFAULT_MENUS = [
+  { name: '会员储值', icon: '💳', path: '/pages/restaurant/recharge' },
+  { name: '会员卡', icon: '🎫', path: '/pages/restaurant/member-card' },
+  { name: '我的订单', icon: '📋', path: '/pages/restaurant/order-list' },
+  { name: '收货地址', icon: '📍', path: '/pages/restaurant/address-list' },
+  { name: '积分商城', icon: '🎁', path: '/pages/restaurant/point-shop?storeId=' + (uni.getStorageSync('restaurant-store-id') || 0) },
+];
+
+const portalMenus = ref(DEFAULT_MENUS);
 
 const profile = ref(null);
 const couponCount = ref(0);
@@ -75,7 +93,35 @@ onShow(async () => {
     couponCount.value = myCoupons.value.length;
   }
   await loadWallet();
+  await loadPortalMenus();
 });
+
+// 我的服务菜单：本店优先 → 平台默认 → 内置兜底
+async function loadPortalMenus() {
+  const storeId = uni.getStorageSync('restaurant-store-id') || 0;
+  try {
+    const res = await RestaurantPortalMenuApi.getMemberMenuList(storeId);
+    if (res.code === 0 && Array.isArray(res.data) && res.data.length) {
+      portalMenus.value = res.data;
+    }
+  } catch (e) {
+    // 静默：接口失败沿用内置默认项
+  }
+}
+function goPortal(item) {
+  if (!item?.path) return;
+  // 外链走 webview，内部页面走路由
+  if (item.path.startsWith('http')) {
+    sheep.$router.go('/pages/public/webview', { url: item.path });
+    return;
+  }
+  // 积分商城需带 storeId（商品按店隔离）
+  const p =
+    item.path.indexOf('point-shop') >= 0 && item.path.indexOf('storeId') < 0
+      ? `${item.path}${item.path.includes('?') ? '&' : '?'}storeId=${uni.getStorageSync('restaurant-store-id') || 0}`
+      : item.path;
+  sheep.$router.go(p);
+}
 
 async function loadWallet() {
   // userId 由后端登录态注入，前端不传
@@ -133,6 +179,9 @@ function goCard() {
 .c-rule { font-size: 24rpx; color: #fa5151; }
 .empty { text-align: center; color: #999; font-size: 24rpx; padding: 20rpx 0; }
 .menu { background: #fff; border-radius: 12rpx; }
-.menu-item { padding: 28rpx 24rpx; border-bottom: 1rpx solid #f5f5f5; font-size: 28rpx; }
+.menu-item { display: flex; align-items: center; padding: 28rpx 24rpx; border-bottom: 1rpx solid #f5f5f5; font-size: 28rpx; }
+.mi-icon { margin-right: 16rpx; font-size: 32rpx; }
+.mi-name { flex: 1; }
+.mi-arrow { color: #ccc; font-size: 32rpx; }
 .loading { text-align: center; color: #999; padding: 120rpx 0; }
 </style>
