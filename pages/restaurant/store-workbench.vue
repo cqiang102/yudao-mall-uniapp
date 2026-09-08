@@ -3,7 +3,30 @@
     <!-- 顶部操作条 -->
     <view class="topbar">
       <view class="scan-btn" @tap="startVerify">📷 扫码核销</view>
+      <view class="center-btn" @tap="openCenter">🏪 门店中心</view>
       <view class="logout-btn" @tap="doLogout">退出</view>
+    </view>
+
+    <!-- 门店中心（S-04）：收支 + 管理指引 -->
+    <view class="mask" v-if="showCenter" @tap="showCenter = false">
+      <view class="dialog" @tap.stop>
+        <view class="dialog-title">门店中心</view>
+        <view class="inc-row" v-if="summary">
+          <view class="inc-item"><text class="inc-num">¥{{ ((summary.totalIncome || 0) / 100).toFixed(2) }}</text><text class="inc-label">累计收入</text></view>
+          <view class="inc-item"><text class="inc-num">¥{{ ((summary.withdrawn || 0) / 100).toFixed(2) }}</text><text class="inc-label">已提现/在途</text></view>
+          <view class="inc-item"><text class="inc-num inc-hl">¥{{ ((summary.available || 0) / 100).toFixed(2) }}</text><text class="inc-label">可提现</text></view>
+        </view>
+        <view class="inc-empty" v-else>收支数据加载失败（需店员角色含「财务查询」权限）</view>
+        <view class="mgr-grid">
+          <view class="mgr-item" @tap="mgrTip('桌号/桌面分类')"><text>🪑</text><text class="mgr-name">桌号管理</text></view>
+          <view class="mgr-item" @tap="mgrTip('预约规则')"><text>📅</text><text class="mgr-name">预约规则</text></view>
+          <view class="mgr-item" @tap="mgrTip('财务管理-提现')"><text>💰</text><text class="mgr-name">提现管理</text></view>
+          <view class="mgr-item" @tap="mgrTip('门店信息')"><text>🏪</text><text class="mgr-name">门店信息</text></view>
+        </view>
+        <view class="dialog-btns">
+          <button class="dlg-btn" @tap="showCenter = false">关闭</button>
+        </view>
+      </view>
     </view>
 
     <!-- 状态 Tab -->
@@ -74,6 +97,21 @@
 import { ref, onLoad, onPullDownRefresh, onReachBottom } from 'vue';
 import StoreWorkApi from '@/sheep/api/restaurant/store-work';
 import { isStoreLogin, storeLogout } from '@/sheep/request/store-request';
+
+// ========== 门店中心（S-04） ==========
+const showCenter = ref(false);
+const summary = ref(null);
+function openCenter() {
+  showCenter.value = true;
+  if (!summary.value) {
+    StoreWorkApi.getWorkbenchSummary().then((res) => {
+      if (res.code === 0) summary.value = res.data || {};
+    }).catch(() => {});
+  }
+}
+function mgrTip(name) {
+  uni.showToast({ title: `请使用商户后台「${name}」管理`, icon: 'none' });
+}
 
 // 状态枚举与后端 OrderStatusEnum 对齐：1待支付 2已支付 3制作中 4已完成 5已取消 6退款中 7已退款
 const statusMap = { 1: '待支付', 2: '已支付', 3: '制作中', 4: '已完成', 5: '已取消', 6: '退款中', 7: '已退款' };
@@ -409,4 +447,15 @@ function doLogout() {
     color: #fff;
   }
 }
+
+.center-btn { flex: 1; text-align: center; color: #fff; background: #ff9500; padding: 10rpx 0; border-radius: 28rpx; font-size: 26rpx; margin: 0 16rpx; }
+.inc-row { display: flex; padding: 20rpx 0; }
+.inc-item { flex: 1; text-align: center; }
+.inc-num { display: block; font-size: 30rpx; font-weight: 600; }
+.inc-hl { color: #fa5151; }
+.inc-label { font-size: 22rpx; color: #999; }
+.inc-empty { text-align: center; color: #999; font-size: 24rpx; padding: 24rpx 0; }
+.mgr-grid { display: flex; flex-wrap: wrap; padding: 10rpx 0; }
+.mgr-item { width: 25%; text-align: center; padding: 20rpx 0; font-size: 40rpx; }
+.mgr-name { display: block; font-size: 22rpx; color: #666; margin-top: 6rpx; }
 </style>

@@ -4,6 +4,15 @@ import request from '@/sheep/request/store-request';
 // 后端：cn.iocoder.yudao.module.restaurant.controller.admin.order.AdminOrderController
 // 前缀：/admin-api/store/order（ADMIN token；storeId 由后端按登录店员强制注入，防跨店越权）
 const StoreWorkApi = {
+  // 收支概览（S-04：累计收入/已提现/可提现；storeId 由后端按登录店员注入）
+  getWorkbenchSummary: () => {
+    return request({
+      url: '/store/withdraw/workbench-summary',
+      method: 'GET',
+      custom: { showLoading: false },
+    });
+  },
+
   // 订单分页（服务端按登录店员绑定门店过滤；PageReqVO: pageNo/pageSize/status?）
   getOrderPage: (params) => {
     return request({
