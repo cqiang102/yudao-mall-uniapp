@@ -615,6 +615,26 @@
 					}
 				},
 				{
+					"path": "news",
+					"style": {
+						"navigationBarTitleText": "资讯"
+					},
+					"meta": {
+						"auth": true,
+						"title": "资讯"
+					}
+				},
+				{
+					"path": "invoice",
+					"style": {
+						"navigationBarTitleText": "发票"
+					},
+					"meta": {
+						"auth": true,
+						"title": "发票"
+					}
+				},
+				{
 					"path": "notice",
 					"style": {
 						"navigationBarTitleText": "公告"

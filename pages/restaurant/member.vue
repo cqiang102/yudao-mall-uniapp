@@ -49,8 +49,14 @@
         <view class="menu-item" @tap="showService = true">
           <text class="mi-icon">🎧</text><text class="mi-name">联系客服</text><text class="mi-arrow">›</text>
         </view>
+        <view class="menu-item" @tap="goNews">
+          <text class="mi-icon">📰</text><text class="mi-name">资讯</text><text class="mi-arrow">›</text>
+        </view>
         <view class="menu-item" @tap="goNotice">
           <text class="mi-icon">📣</text><text class="mi-name">公告</text><text class="mi-arrow">›</text>
+        </view>
+        <view class="menu-item" @tap="goInvoice">
+          <text class="mi-icon">🧾</text><text class="mi-name">发票</text><text class="mi-arrow">›</text>
         </view>
         <view class="menu-item" @tap="goHelp('help')">
           <text class="mi-icon">❓</text><text class="mi-name">帮助中心</text><text class="mi-arrow">›</text>
@@ -178,6 +184,12 @@ function goHelp(t) {
 }
 function goNotice() {
   sheep.$router.go('/pages/restaurant/notice');
+}
+function goNews() {
+  sheep.$router.go('/pages/restaurant/news');
+}
+function goInvoice() {
+  sheep.$router.go('/pages/restaurant/invoice');
 }
 function callService() {
   if (storeInfo.value.phone) uni.makePhoneCall({ phoneNumber: storeInfo.value.phone });
