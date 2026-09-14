@@ -8,7 +8,7 @@ const RestaurantAddressApi = {
   // 我的地址列表（默认地址在前）
   getMyList: () => {
     return request({
-      url: '/member/address/my-list',
+      url: '/member/restaurant-address/my-list',
       method: 'GET',
       custom: {
         showLoading: false,
@@ -18,7 +18,7 @@ const RestaurantAddressApi = {
   // 创建地址 { name, phone, region, detail, defaultStatus }
   create: (data) => {
     return request({
-      url: '/member/address/create',
+      url: '/member/restaurant-address/create',
       method: 'POST',
       data,
     });
@@ -26,7 +26,7 @@ const RestaurantAddressApi = {
   // 更新地址（需带 id，归属由后端校验）
   update: (data) => {
     return request({
-      url: '/member/address/update',
+      url: '/member/restaurant-address/update',
       method: 'PUT',
       data,
     });
@@ -34,7 +34,7 @@ const RestaurantAddressApi = {
   // 删除地址
   delete: (id) => {
     return request({
-      url: '/member/address/delete',
+      url: '/member/restaurant-address/delete',
       method: 'DELETE',
       params: { id },
     });
@@ -42,7 +42,7 @@ const RestaurantAddressApi = {
   // 设为默认地址
   setDefault: (id) => {
     return request({
-      url: '/member/address/set-default',
+      url: '/member/restaurant-address/set-default',
       method: 'PUT',
       params: { id },
     });
