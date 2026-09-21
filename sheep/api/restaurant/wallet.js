@@ -3,22 +3,21 @@ import PayOrderApi from '@/sheep/api/pay/order';
 
 // 餐饮 - 会员储值充值（消费者端）
 // 后端：cn.iocoder.yudao.module.restaurant.controller.app.member.MemberRechargeController
-// 前缀：/app-api  userType=MEMBER(2)
+// 前缀：/app-api  userType 由服务端固定为「会员」（UserTypeEnum.MEMBER=1），前端不传
 // 安全约定（P0-3）：userId 一律由后端从登录态取，前端【禁止】传 userId。
 const RestaurantWalletApi = {
-  // 获取会员钱包余额（芋道 PayWallet，userId 由后端登录态注入）
+  // 获取会员钱包余额（芋道 PayWallet，userId 由后端登录态注入、userType 由后端固定）
   // 返回 PayWalletRespDTO：{ id, userId, userType, balance(分), totalRecharge, totalExpense, ... }
-  getWallet: (userType) => {
+  getWallet: () => {
     return request({
       url: '/member/recharge/wallet',
       method: 'GET',
-      params: { userType },
       custom: { showLoading: false },
     });
   },
 
   // 创建储值充值单，返回芋道 pay_order.id（供拉起微信支付）
-  // data: { userType, appKey, payAmount(分), giftAmount(分) }  （userId 由后端登录态取）
+  // data: { appKey, payAmount(分), giftAmount(分) }  （userId / userType 均由后端取，前端不传）
   createRecharge: (data) => {
     return request({
       url: '/member/recharge/create',

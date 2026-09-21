@@ -61,7 +61,9 @@ import sheep from '@/sheep';
 import { appKey } from '@/sheep/config';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
 
-const USER_TYPE = 2; // 芋道 UserTypeEnum.MEMBER
+// 注意：不要在这里定义 userType 再传后端——消费端钱包的 userType 由后端固定为
+// 「会员」（UserTypeEnum.MEMBER=1）。历史上这里写的是 2，导致充值的钱包与订单
+// 余额支付扣款的钱包不是同一个（充了钱却付不了款），2026-09-21 起由服务端统一收口。
 
 const balance = ref(0);
 const plans = [
@@ -103,8 +105,8 @@ function formatTime(t) {
 }
 
 async function loadWallet() {
-  // userId 由后端登录态注入，前端不传
-  const res = await RestaurantWalletApi.getWallet(USER_TYPE);
+  // userId / userType 均由后端注入（userType 固定为会员钱包），前端不传
+  const res = await RestaurantWalletApi.getWallet();
   if (res.code === 0) balance.value = res.data?.balance || 0;
 }
 
@@ -125,9 +127,8 @@ async function doRecharge() {
   const plan = plans.find((p) => p.pay === selectedPay.value);
   const gift = customMode.value || !plan ? 0 : plan.gift;
 
-  // userId 由后端登录态注入，前端不传
+  // userId / userType 均由后端注入，前端不传
   const createRes = await RestaurantWalletApi.createRecharge({
-    userType: USER_TYPE,
     appKey,
     payAmount: payAmount.value,
     giftAmount: gift,
