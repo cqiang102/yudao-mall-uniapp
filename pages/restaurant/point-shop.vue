@@ -99,12 +99,18 @@ function switchMine() {
 
 function onExchange(p) {
   if (p.stock === 0) return;
+  if (!storeId.value) {
+    uni.showToast({ title: '请从门店页进入积分商城', icon: 'none' });
+    return;
+  }
   uni.showModal({
     title: '确认兑换',
     content: `使用 ${p.points} 积分兑换「${p.name}」？`,
     success: async (res) => {
       if (res.confirm !== true) return;
+      // 积分商品是门店级的：后端会校验 storeId 与商品归属门店一致，故必须带上
       const { code, data, msg } = await PointShopApi.exchange({
+        storeId: storeId.value,
         productId: p.id,
         quantity: 1,
       });
