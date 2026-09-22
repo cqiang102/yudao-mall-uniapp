@@ -8,4 +8,4 @@ deploy.sh
 yarn.lock
 package-lock.json
 *.keystore
-pnpm-lock.yaml
+# pnpm-lock.yaml 不再忽略：改用 pnpm 后需提交锁文件，保证各环境依赖一致
