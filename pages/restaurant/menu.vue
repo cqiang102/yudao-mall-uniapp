@@ -277,6 +277,15 @@ onLoad((options) => {
   // 记住最近进入的门店，供「我的」页（个人中心菜单按店配置）使用
   if (storeId.value) {
     uni.setStorageSync('restaurant-store-id', storeId.value);
+  } else {
+    // 2026-09-30：从底部导航（tabBar）直达「点餐」时没有 URL 参数，
+    // 若不回退会导致本页一直显示"未识别到门店"。
+    // 复用「我的」页已在用的同一个 storage key，回到最近一次进入的门店。
+    // 扫码/带参进入时上面的 if 分支会覆盖它，不影响扫码场景。
+    const lastStoreId = Number(uni.getStorageSync('restaurant-store-id') || 0);
+    if (lastStoreId > 0) {
+      storeId.value = lastStoreId;
+    }
   }
   loadData();
 });
