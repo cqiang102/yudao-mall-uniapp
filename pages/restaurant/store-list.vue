@@ -66,7 +66,8 @@
 </template>
 
 <script setup>
-import { ref, onLoad } from 'vue';
+import { ref } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import RestaurantStoreApi from '@/sheep/api/restaurant/store';
 import RestaurantHomeDecorApi from '@/sheep/api/restaurant/homedecor';

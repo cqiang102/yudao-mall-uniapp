@@ -56,7 +56,8 @@
 </template>
 
 <script setup>
-import { ref, onLoad, onPullDownRefresh } from 'vue';
+import { ref } from 'vue';
+import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app';
 import PointShopApi from '@/sheep/api/restaurant/pointshop';
 
 const tab = ref('goods');

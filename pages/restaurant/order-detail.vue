@@ -29,7 +29,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onLoad, onPullDownRefresh } from 'vue';
+import { ref, computed } from 'vue';
+import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import { appKey } from '@/sheep/config';
 import RestaurantOrderApi from '@/sheep/api/restaurant/order';

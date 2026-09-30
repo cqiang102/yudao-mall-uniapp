@@ -179,15 +179,42 @@ const adaptTenant = async () => {
   }
 };
 
-/** 初始化装修模版 */
+/**
+ * 初始化装修模版
+ *
+ * 餐饮 SaaS 改造（2026-09-30）：本项目的消费者端页面是自建的餐饮页面
+ * （`pages/restaurant/*`，共 17 个），**不依赖**芋道 mall 的「店铺装修」数据；
+ * 而后端并未启用 `yudao-module-promotion`（库里也没有 diy 相关表），
+ * 该接口调用必然失败。
+ *
+ * 原实现在「拿不到模板」时执行 `$router.error('TemplateError')`，
+ * 会导致**整个应用初始化中断** —— 实测表现为所有消费端页面都打不开
+ * （页面只显示一句错误占位，例如"连接服务器超时，点击屏幕重试"）。
+ *
+ * 故这里把「拿不到模板 / 接口报错」降级为「跳过装修配置」：
+ * - 不影响餐饮自建页面（menu / order-list / user-center 等）正常渲染
+ * - shopro 原生的装修页（`pages/index/index`、`pages/index/user`）会退化为空态，
+ *   餐饮端不使用这些页面，可接受
+ * - 若将来要接装修能力，建议改用餐饮自己的 `restaurant_home_decor`，
+ *   而不是重新启用 mall 的 promotion 模块
+ */
 const adaptTemplate = async (appTemplate, templateId) => {
-  const { data: diyTemplate } = templateId
-    ? // 查询指定模板，一般是预览时使用
-      await DiyApi.getDiyTemplate(templateId)
-    : await DiyApi.getUsedDiyTemplate();
-  // 模板不存在
+  let diyTemplate = null;
+  try {
+    const res = templateId
+      ? // 查询指定模板，一般是预览时使用
+        await DiyApi.getDiyTemplate(templateId)
+      : await DiyApi.getUsedDiyTemplate();
+    diyTemplate = res?.data;
+  } catch (e) {
+    console.warn(
+      '[adaptTemplate] 装修模板接口不可用，已跳过装修配置（不影响餐饮自建页面）',
+      e?.msg || e?.message || e,
+    );
+  }
+  // 模板不存在 / 接口异常：跳过装修配置，不再中断应用初始化
   if (!diyTemplate) {
-    $router.error('TemplateError');
+    console.warn('[adaptTemplate] 未获取到装修模板，已跳过装修配置（不影响餐饮自建页面）');
     return;
   }
 

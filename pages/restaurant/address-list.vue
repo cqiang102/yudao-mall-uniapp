@@ -24,7 +24,8 @@
 </template>
 
 <script setup>
-import { ref, onLoad, onShow } from 'vue';
+import { ref } from 'vue';
+import { onLoad, onShow } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import RestaurantAddressApi from '@/sheep/api/restaurant/address';
 

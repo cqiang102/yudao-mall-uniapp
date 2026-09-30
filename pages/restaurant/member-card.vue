@@ -44,7 +44,8 @@
 </template>
 
 <script setup>
-import { ref, onShow } from 'vue';
+import { ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import RestaurantCardApi from '@/sheep/api/restaurant/card';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';

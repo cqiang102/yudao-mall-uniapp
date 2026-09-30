@@ -116,7 +116,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onLoad } from 'vue';
+import { ref, reactive, computed } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import RestaurantDishApi from '@/sheep/api/restaurant/dish';
 import RestaurantBannerApi from '@/sheep/api/restaurant/banner';

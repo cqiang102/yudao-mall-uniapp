@@ -56,7 +56,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onShow } from 'vue';
+import { ref, computed } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import { appKey } from '@/sheep/config';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';

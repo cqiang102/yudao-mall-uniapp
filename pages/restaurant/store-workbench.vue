@@ -94,7 +94,8 @@
 </template>
 
 <script setup>
-import { ref, onLoad, onPullDownRefresh, onReachBottom } from 'vue';
+import { ref } from 'vue';
+import { onLoad, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app';
 import StoreWorkApi from '@/sheep/api/restaurant/store-work';
 import { isStoreLogin, storeLogout } from '@/sheep/request/store-request';
 

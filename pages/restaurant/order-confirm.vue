@@ -144,7 +144,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onLoad, onUnload } from 'vue';
+import { ref, reactive, computed } from 'vue';
+import { onLoad, onUnload } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import { appKey } from '@/sheep/config';
 import RestaurantOrderApi from '@/sheep/api/restaurant/order';

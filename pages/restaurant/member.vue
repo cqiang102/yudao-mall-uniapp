@@ -90,7 +90,8 @@
 </template>
 
 <script setup>
-import { ref, onShow } from 'vue';
+import { ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import RestaurantMemberApi from '@/sheep/api/restaurant/member';
 import RestaurantCouponApi from '@/sheep/api/restaurant/coupon';

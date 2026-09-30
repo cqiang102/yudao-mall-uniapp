@@ -30,7 +30,8 @@
 </template>
 
 <script setup>
-import { reactive, ref, onLoad } from 'vue';
+import { reactive, ref } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import RestaurantAddressApi from '@/sheep/api/restaurant/address';
 
 const saving = ref(false);
