@@ -870,16 +870,28 @@
 		"selectedColor": "#ff3000",
 		"backgroundColor": "#ffffff",
 		"list": [{
+				"pagePath": "pages/restaurant/store-list",
+				"text": "门店",
+				"iconPath": "static/tabbar/store.png",
+				"selectedIconPath": "static/tabbar/store-active.png"
+			},
+			{
 				"pagePath": "pages/restaurant/menu",
-				"text": "点餐"
+				"text": "点餐",
+				"iconPath": "static/tabbar/meal.png",
+				"selectedIconPath": "static/tabbar/meal-active.png"
 			},
 			{
 				"pagePath": "pages/restaurant/order-list",
-				"text": "订单"
+				"text": "订单",
+				"iconPath": "static/tabbar/order.png",
+				"selectedIconPath": "static/tabbar/order-active.png"
 			},
 			{
 				"pagePath": "pages/restaurant/user-center",
-				"text": "我的"
+				"text": "我的",
+				"iconPath": "static/tabbar/user.png",
+				"selectedIconPath": "static/tabbar/user-active.png"
 			}
 		]
 	}
