@@ -15,6 +15,12 @@
         <view class="type-tip" v-if="orderType === 1 && tableId">
           堂食 · 桌台 #{{ tableId }}
         </view>
+        <!-- 2026-10-03：堂食但未选桌台时提前给出明确引导。
+             后端校验是 2000006003「堂食订单必须选择桌台」，但等到提交才报错，
+             从底部导航直达点餐的用户会不清楚原因。 -->
+        <view class="type-tip warn" v-else-if="orderType === 1">
+          堂食需先扫桌码选择桌台；也可切换到「自取」后提交
+        </view>
         <view class="type-tip" v-else-if="orderType === 2">
           到店自取 · 凭订单号取餐
         </view>
@@ -164,6 +170,12 @@ const storeId = ref(null);
 const tableId = ref(null);
 const orderType = ref(1);
 const payType = ref('weixin');
+// 2026-10-03：H5 / App 等非微信小程序环境拉不起微信支付（uni.requestPayment 不可用），
+// 若仍默认「微信支付」，用户提交后会毫无反应。故在这些环境下默认改为余额支付；
+// 小程序内保持默认微信支付不变。（submit 里还有一道兜底拦截）
+// #ifndef MP-WEIXIN
+payType.value = 'balance';
+// #endif
 const remark = ref('');
 const memberProfile = ref(null);
 const walletBalance = ref(0); // 会员储值余额（分），来自 /member/recharge/wallet，非会员积分
@@ -390,6 +402,14 @@ async function submit() {
       return;
     }
   }
+  // 2026-10-03：非小程序环境拉不起微信支付 → 在建单之前就拦掉，
+  // 避免"订单已创建、却无法支付"的中间态。
+  // #ifndef MP-WEIXIN
+  if (payType.value === 'weixin') {
+    uni.showToast({ title: '微信支付需在微信小程序内使用，请改用余额支付', icon: 'none' });
+    return;
+  }
+  // #endif
   // M-12：订阅引导（须在用户点击处理中调用，微信规定不能放 onLoad/onShow）。
   // 弹出授权框后无论 accept/reject 均继续下单，不阻断主流程
   await requestOrderSubscribe();
@@ -452,6 +472,7 @@ async function submit() {
 .seg-item { flex: 1; text-align: center; padding: 18rpx 0; border: 1rpx solid #ddd; border-radius: 40rpx; font-size: 28rpx; color: #666; }
 .seg-item.on { border-color: #fa5151; color: #fa5151; background: #fff7f7; }
 .type-tip { font-size: 24rpx; color: #999; margin-top: 12rpx; }
+.type-tip.warn { color: #ff3000; }
 .row { display: flex; align-items: center; padding: 16rpx 0; }
 .row .label { width: 120rpx; font-size: 28rpx; color: #333; }
 .row input { flex: 1; font-size: 28rpx; }
