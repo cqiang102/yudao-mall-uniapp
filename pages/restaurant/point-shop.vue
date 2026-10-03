@@ -59,6 +59,7 @@
 import { ref } from 'vue';
 import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app';
 import PointShopApi from '@/sheep/api/restaurant/pointshop';
+import { resolveStoreId, setStoredStoreId } from '@/sheep/helper/restaurant-store';
 
 const tab = ref('goods');
 // 会员端商品按门店隔离：从门店/菜单页跳入时携带 storeId
@@ -68,8 +69,11 @@ const myOrders = ref([]);
 const statusMap = { 0: '待核销', 1: '已核销', 2: '已取消' };
 const statusText = (s) => statusMap[s] || '未知';
 
-onLoad((opts) => {
-  storeId.value = opts?.storeId ? Number(opts.storeId) : null;
+onLoad(async (opts) => {
+  // 2026-10-03：带 storeId 进入时记住它；不带参数（底部导航 / 我的菜单宫格进入）
+  // 则用统一兜底取门店（本地记忆 → 门店列表第一个）。
+  // 原先无参数时 storeId 为 null → 不加载商品 → 页面显示"该门店暂无积分商品"。
+  storeId.value = opts?.storeId ? setStoredStoreId(opts.storeId) : await resolveStoreId();
   if (storeId.value) loadGoods();
   else uni.showToast({ title: '请从门店页进入', icon: 'none' });
 });

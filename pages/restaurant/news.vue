@@ -18,13 +18,19 @@
 <script setup>
 import { ref } from 'vue';
 import RestaurantNewsApi from '@/sheep/api/restaurant/news';
+import { resolveStoreId } from '@/sheep/helper/restaurant-store';
 
 const list = ref([]);
 const expanded = ref(null);
 
-RestaurantNewsApi.getList(uni.getStorageSync('restaurant-store-id') || 0).then((res) => {
-  if (res.code === 0) list.value = res.data || [];
-});
+// 2026-10-03：门店上下文改用统一兜底（本地记忆优先，没有则取门店列表第一个）。
+// 原先写 `getStorageSync('restaurant-store-id') || 0`，新用户从未选过店时会传 0，
+// 后端按「全平台」查 → 本店资讯一条都查不到，页面显示"暂无资讯"。
+resolveStoreId()
+  .then((storeId) => RestaurantNewsApi.getList(storeId))
+  .then((res) => {
+    if (res.code === 0) list.value = res.data || [];
+  });
 
 function expand(n) {
   expanded.value = expanded.value === n.id ? null : n.id;

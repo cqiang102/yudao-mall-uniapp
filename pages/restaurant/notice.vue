@@ -17,13 +17,18 @@
 <script setup>
 import { ref } from 'vue';
 import RestaurantNoticeApi from '@/sheep/api/restaurant/noticepub';
+import { resolveStoreId } from '@/sheep/helper/restaurant-store';
 
 const list = ref([]);
 const expanded = ref(null);
 
-RestaurantNoticeApi.getList(uni.getStorageSync('restaurant-store-id') || 0).then((res) => {
-  if (res.code === 0) list.value = res.data || [];
-});
+// 2026-10-03：同 news.vue —— 门店上下文改用统一兜底，
+// 避免新用户（未选过店）传 storeId=0 导致「全平台」查不到本店公告。
+resolveStoreId()
+  .then((storeId) => RestaurantNoticeApi.getList(storeId))
+  .then((res) => {
+    if (res.code === 0) list.value = res.data || [];
+  });
 
 function expand(n) {
   expanded.value = expanded.value === n.id ? null : n.id;
