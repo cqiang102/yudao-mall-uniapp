@@ -224,7 +224,16 @@ function pickSlot(s) {
 }
 function buildReserveTime() {
   if (!reserveDate.value || !reserveTimeHM.value) return null;
-  return `${reserveDate.value}T${reserveTimeHM.value}:00`;
+  // 2026-10-04 修复：后端 OrderVO.CreateReqVO.reserveTime 是 LocalDateTime，
+  // 而芋道把它配成了 **EpochMillis**（见 YudaoJacksonAutoConfiguration：
+  //   .serializerByType(LocalDateTime.class, TimestampLocalDateTimeSerializer.INSTANCE)
+  //   .deserializerByType(LocalDateTime.class, TimestampLocalDateTimeDeserializer.INSTANCE)）
+  // → 传 "YYYY-MM-DDTHH:mm:ss" 字符串会被反序列化成 null，
+  //   订单创建直接报 2000018000「预约时间不能为空且不得早于当前时间」，
+  //   即预约功能在 UI 上根本下不了单（实测确认）。
+  // 这里改为返回**毫秒时间戳**（无 Z 后缀 → 按本地时区解析）。
+  const ts = new Date(`${reserveDate.value}T${reserveTimeHM.value}:00`).getTime();
+  return Number.isNaN(ts) ? null : ts;
 }
 
 // 外卖配送
