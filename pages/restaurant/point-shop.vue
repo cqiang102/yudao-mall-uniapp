@@ -72,8 +72,10 @@ const statusText = (s) => statusMap[s] || '未知';
 onLoad(async (opts) => {
   // 2026-10-03：带 storeId 进入时记住它；不带参数（底部导航 / 我的菜单宫格进入）
   // 则用统一兜底取门店（本地记忆 → 门店列表第一个）。
-  // 原先无参数时 storeId 为 null → 不加载商品 → 页面显示"该门店暂无积分商品"。
-  storeId.value = opts?.storeId ? setStoredStoreId(opts.storeId) : await resolveStoreId();
+  // 注意：URL 里可能传来 "0"（历史写法拼的 `storeId=0`），0 不是有效门店，
+  // 必须走兜底，否则商品按"全平台"查会查不到（后端会按 storeId 精确匹配）。
+  const fromUrl = Number(opts?.storeId || 0);
+  storeId.value = fromUrl > 0 ? setStoredStoreId(fromUrl) : await resolveStoreId();
   if (storeId.value) loadGoods();
   else uni.showToast({ title: '请从门店页进入', icon: 'none' });
 });

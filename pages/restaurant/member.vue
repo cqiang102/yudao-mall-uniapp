@@ -97,6 +97,7 @@ import RestaurantMemberApi from '@/sheep/api/restaurant/member';
 import RestaurantCouponApi from '@/sheep/api/restaurant/coupon';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
 import RestaurantPortalMenuApi from '@/sheep/api/restaurant/portalmenu';
+import { getStoredStoreId, resolveStoreId } from '@/sheep/helper/restaurant-store';
 import RestaurantStoreApi from '@/sheep/api/restaurant/store';
 
 // 内置兜底：后端无配置（或接口失败）时展示，保证「我的」页永不空白
@@ -105,7 +106,8 @@ const DEFAULT_MENUS = [
   { name: '会员卡', icon: '🎫', path: '/pages/restaurant/member-card' },
   { name: '我的订单', icon: '📋', path: '/pages/restaurant/order-list' },
   { name: '收货地址', icon: '📍', path: '/pages/restaurant/address-list' },
-  { name: '积分商城', icon: '🎁', path: '/pages/restaurant/point-shop?storeId=' + (uni.getStorageSync('restaurant-store-id') || 0) },
+  // 积分商城：门店由该页自身兜底（sheep/helper/restaurant-store），此处不再拼参数
+  { name: '积分商城', icon: '🎁', path: '/pages/restaurant/point-shop' },
 ];
 
 const portalMenus = ref(DEFAULT_MENUS);
@@ -135,7 +137,8 @@ onShow(async () => {
 
 // 我的服务菜单：本店优先 → 平台默认 → 内置兜底
 async function loadPortalMenus() {
-  const storeId = uni.getStorageSync('restaurant-store-id') || 0;
+  // 本店菜单优先；无记忆时传 0，后端会回退到平台默认菜单（既有设计）
+  const storeId = getStoredStoreId();
   try {
     const res = await RestaurantPortalMenuApi.getMemberMenuList(storeId);
     if (res.code === 0 && Array.isArray(res.data) && res.data.length) {
@@ -152,12 +155,9 @@ function goPortal(item) {
     sheep.$router.go('/pages/public/webview', { url: item.path });
     return;
   }
-  // 积分商城需带 storeId（商品按店隔离）
-  const p =
-    item.path.indexOf('point-shop') >= 0 && item.path.indexOf('storeId') < 0
-      ? `${item.path}${item.path.includes('?') ? '&' : '?'}storeId=${uni.getStorageSync('restaurant-store-id') || 0}`
-      : item.path;
-  sheep.$router.go(p);
+  // 2026-10-03：按店隔离的页面（如积分商城）已由页面自身兜底门店，
+  // 这里不再拼 storeId=0（拼 0 会让目标页按"全平台"查，查不到本店数据）
+  sheep.$router.go(item.path);
 }
 
 // ========== 用户中心（C-12） ==========
@@ -166,7 +166,8 @@ const storeInfo = ref({});
 
 // 进入页面时顺带拉门店客服信息（有 storeId 才拉，失败静默）
 async function loadStoreService() {
-  const sid = uni.getStorageSync('restaurant-store-id');
+  // 没选过店时用统一兜底（本地记忆 → 门店列表第一个），否则客服信息永远拉不到
+  const sid = await resolveStoreId();
   if (!sid) return;
   try {
     const res = await RestaurantStoreApi.getStore(sid);
