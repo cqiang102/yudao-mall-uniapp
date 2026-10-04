@@ -105,6 +105,8 @@ const DEFAULT_MENUS = [
   { name: '会员储值', icon: '💳', path: '/pages/restaurant/recharge' },
   { name: '会员卡', icon: '🎫', path: '/pages/restaurant/member-card' },
   { name: '我的订单', icon: '📋', path: '/pages/restaurant/order-list' },
+  // 2026-10-04：消费端此前没有优惠券入口（后端有 my-list/claim，前端有 API，但看不到券）
+  { name: '我的优惠券', icon: '🎟️', path: '/pages/restaurant/coupon' },
   { name: '收货地址', icon: '📍', path: '/pages/restaurant/address-list' },
   // 积分商城：门店由该页自身兜底（sheep/helper/restaurant-store），此处不再拼参数
   { name: '积分商城', icon: '🎁', path: '/pages/restaurant/point-shop' },

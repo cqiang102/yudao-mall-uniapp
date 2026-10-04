@@ -656,6 +656,16 @@
 						"title": "资讯"
 					}
 				},
+				{
+					"path": "coupon",
+					"style": {
+						"navigationBarTitleText": "我的优惠券"
+					},
+					"meta": {
+						"auth": true,
+						"title": "我的优惠券"
+					}
+				},
 {
 					"path": "invoice",
 					"style": {
