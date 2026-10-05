@@ -14,12 +14,24 @@
 const pad = (n) => (n < 10 ? '0' + n : '' + n);
 
 /**
+ * 归一化时间入参（2026-10-05 补）
+ * 后端多数接口返回**数字**毫秒时间戳，但少数接口返回**字符串形式**的（如 user-center
+ * 的 summary.lastOrderTime）。`new Date("1789702812000")` 会得到 Invalid Date →
+ * formatTime 原样返回 → 页面上出现裸时间戳（实测 bug）。
+ * 这里只对「纯数字字符串」做转换，避免把 '2026-10-05' 这类日期字符串误转成数字。
+ */
+function toDateValue(t) {
+  if (typeof t === 'string' && /^\d+$/.test(t.trim())) return Number(t.trim());
+  return t;
+}
+
+/**
  * 毫秒时间戳 → `YYYY-MM-DD HH:mm`
  * 传空返回 ''；无法解析时原样返回字符串，避免页面出现 "NaN"。
  */
 export function formatTime(t) {
   if (t === null || t === undefined || t === '') return '';
-  const d = new Date(t);
+  const d = new Date(toDateValue(t));
   if (isNaN(d.getTime())) return String(t);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
@@ -27,7 +39,7 @@ export function formatTime(t) {
 /** 毫秒时间戳 → `YYYY-MM-DD` */
 export function formatDate(t) {
   if (t === null || t === undefined || t === '') return '';
-  const d = new Date(t);
+  const d = new Date(toDateValue(t));
   if (isNaN(d.getTime())) return String(t);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }

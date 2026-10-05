@@ -23,7 +23,7 @@
         </view>
         <!-- 预约单展示预约时间（C-15） -->
         <view class="reserve" v-if="o.type === 4 && o.reserveTime">
-          预约到店：{{ o.reserveTime.replace('T', ' ') }}
+          预约到店：{{ formatTime(o.reserveTime) }}
         </view>
         <view class="bottom">
           <text>{{ formatTime(o.createTime) }}</text>

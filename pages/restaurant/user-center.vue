@@ -33,6 +33,7 @@
 import { ref, computed } from 'vue';
 import sheep from '@/sheep';
 import RestaurantUserCenterApi from '@/sheep/api/restaurant/usercenter';
+import { formatTime } from '@/sheep/helper/format';
 
 const props = defineProps({
   // 页面类型：consume-历史消费  help-帮助  about-关于
@@ -57,9 +58,6 @@ if (props.type === 'consume') {
   });
 }
 
-function formatTime(t) {
-  return t ? String(t).replace('T', ' ').slice(0, 16) : '';
-}
 function goOrders() {
   sheep.$router.go('/pages/restaurant/order-list');
 }
