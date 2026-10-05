@@ -66,9 +66,11 @@ const statusText = computed(() => statusMap[order.value?.status] || '未知');
 const typeText = computed(() => typeMap[order.value?.type] || '堂食');
 // 已支付 / 制作中 / 已完成 可申请退款
 const canRefund = computed(() => [2, 3, 4].includes(order.value?.status));
-// 自取/外卖 且已支付或制作中：展示核销码供门店扫码核销
+// 仅「自取」且已支付/制作中时展示核销码供门店扫码核销。
+// 外卖单不展示：餐由骑手送到顾客手上，顾客无需向门店出示核销码
+// （2026-10-05 顺手修正——此前 type=3 也会显示"外卖 · 请向前台出示"，逻辑矛盾）。
 const showVerify = computed(() =>
-  [2, 3].includes(order.value?.type) && [2, 3].includes(order.value?.status) && !!order.value?.verifyCode
+  [2].includes(order.value?.type) && [2, 3].includes(order.value?.status) && !!order.value?.verifyCode
 );
 
 let orderId = null;
