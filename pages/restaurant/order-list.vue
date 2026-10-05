@@ -26,7 +26,7 @@
           预约到店：{{ o.reserveTime.replace('T', ' ') }}
         </view>
         <view class="bottom">
-          <text>{{ o.createTime }}</text>
+          <text>{{ formatTime(o.createTime) }}</text>
           <view class="ops">
             <text v-if="o.status === 1" class="pay-btn" @tap.stop="pay(o)">去支付</text>
             <text
@@ -50,6 +50,7 @@ import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import { appKey } from '@/sheep/config';
 import RestaurantOrderApi from '@/sheep/api/restaurant/order';
+import { formatTime } from '@/sheep/helper/format';
 
 const list = ref([]);
 // 状态枚举与后端 OrderStatusEnum 对齐：1待支付 2已支付 3制作中 4已完成 5已取消 6退款中 7已退款

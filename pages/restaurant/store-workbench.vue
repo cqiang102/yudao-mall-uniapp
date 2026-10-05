@@ -59,7 +59,7 @@
           {{ o.receiverName }} {{ o.receiverPhone }} {{ o.receiverAddress }}
         </view>
         <view class="mid">
-          <text>{{ typeText(o.type) }} · {{ o.createTime }}</text>
+          <text>{{ typeText(o.type) }} · {{ formatTime(o.createTime) }}</text>
           <text class="price">¥{{ ((o.payPrice || o.totalPrice || 0) / 100).toFixed(2) }}</text>
         </view>
         <view class="actions" v-if="actionsOf(o).length">
@@ -98,6 +98,7 @@ import { ref } from 'vue';
 import { onLoad, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app';
 import StoreWorkApi from '@/sheep/api/restaurant/store-work';
 import { isStoreLogin, storeLogout } from '@/sheep/request/store-request';
+import { formatTime } from '@/sheep/helper/format';
 
 // ========== 门店中心（S-04） ==========
 const showCenter = ref(false);

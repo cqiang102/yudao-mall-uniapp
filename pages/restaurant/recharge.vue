@@ -61,6 +61,7 @@ import { onShow } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import { appKey } from '@/sheep/config';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
+import { formatTime } from '@/sheep/helper/format';
 
 // 注意：不要在这里定义 userType 再传后端——消费端钱包的 userType 由后端固定为
 // 「会员」（UserTypeEnum.MEMBER=1）。历史上这里写的是 2，导致充值的钱包与订单
@@ -95,14 +96,6 @@ function selectPlan(p) {
 }
 function onCustomInput() {
   customMode.value = true;
-}
-
-function formatTime(t) {
-  if (!t) return '';
-  const d = new Date(t);
-  if (isNaN(d.getTime())) return String(t);
-  const pad = (n) => (n < 10 ? '0' + n : '' + n);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 async function loadWallet() {

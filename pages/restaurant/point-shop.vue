@@ -45,7 +45,7 @@
             <text class="verify-tip">到店出示此码</text>
           </view>
           <view class="order-bottom">
-            <text class="order-time">{{ o.createTime }}</text>
+            <text class="order-time">{{ formatTime(o.createTime) }}</text>
             <text v-if="o.status === 0" class="cancel-btn" @tap="onCancel(o)">取消兑换</text>
           </view>
         </view>
@@ -60,6 +60,7 @@ import { ref } from 'vue';
 import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app';
 import PointShopApi from '@/sheep/api/restaurant/pointshop';
 import { resolveStoreId, setStoredStoreId } from '@/sheep/helper/restaurant-store';
+import { formatTime } from '@/sheep/helper/format';
 
 const tab = ref('goods');
 // 会员端商品按门店隔离：从门店/菜单页跳入时携带 storeId

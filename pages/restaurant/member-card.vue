@@ -49,6 +49,7 @@ import { onShow } from '@dcloudio/uni-app';
 import sheep from '@/sheep';
 import RestaurantCardApi from '@/sheep/api/restaurant/card';
 import RestaurantWalletApi from '@/sheep/api/restaurant/wallet';
+import { formatTime } from '@/sheep/helper/format';
 
 const cards = ref([]);
 const records = ref([]);
@@ -58,16 +59,6 @@ onShow(async () => {
   load();
   loadWallet();
 });
-
-// 2026-10-05 修复：购卡记录原样渲染毫秒时间戳（如 1789973271000），
-// 与充值页统一为 YYYY-MM-DD HH:mm（recharge.vue 早就有这个函数，本页漏了）。
-function formatTime(t) {
-  if (!t) return '';
-  const d = new Date(t);
-  if (isNaN(d.getTime())) return String(t);
-  const pad = (n) => (n < 10 ? '0' + n : '' + n);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 async function load() {
   const [cRes, rRes] = await Promise.all([
