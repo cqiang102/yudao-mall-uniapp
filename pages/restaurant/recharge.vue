@@ -112,18 +112,17 @@ async function loadWallet() {
 }
 
 async function loadRecords() {
-  const userId = sheep.$store('user').userInfo?.id;
-  if (!userId) return;
+  // 2026-10-05 修复：原实现先取 sheep.$store('user').userInfo?.id，拿不到就 return。
+  // 但 userId 是后端从登录态注入的、前端根本不需要（API 注释也写明"前端不传 userId"）；
+  // H5 下该 store 取不到值时整段被静默跳过 →「充值记录」永远显示"暂无"。
+  // 实测同一时刻接口返回 total=5，故删除该判断，直接取列表。
   const res = await RestaurantWalletApi.getRechargePage({ pageNo: 1, pageSize: 20 });
   if (res.code === 0) records.value = res.data?.list || [];
 }
 
 async function doRecharge() {
-  const userId = sheep.$store('user').userInfo?.id;
-  if (!userId) {
-    sheep.$helper.toast('请先登录');
-    return;
-  }
+  // 2026-10-05：同样去掉 userInfo 前置判断——userId 由后端登录态注入，
+  // 未登录时接口会返回 401，request 拦截器会统一处理。
   if (!canRecharge.value) return;
   const plan = plans.find((p) => p.pay === selectedPay.value);
   const gift = customMode.value || !plan ? 0 : plan.gift;
