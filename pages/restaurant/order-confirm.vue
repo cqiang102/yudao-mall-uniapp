@@ -322,7 +322,9 @@ onLoad(async (options) => {
 
   userId = sheep.$store('user').userInfo?.id;
   // 确保会员档案已创建，用于下单 memberId 提交；userId 由后端登录态取，前端不传
-  if (userId) {
+  // 2026-10-07 修复：原为 if (userId) { ... } —— H5 下该 store 取不到值时会跳过
+  // 档案初始化 / 优惠券 / 钱包加载，导致下单页少数据。改为无条件执行（未登录时接口返回 401）。
+  {
     const bindRes = await RestaurantMemberApi.bind();
     if (bindRes.code === 0) {
       const getRes = await RestaurantMemberApi.get();

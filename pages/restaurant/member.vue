@@ -121,8 +121,10 @@ const myCoupons = ref([]);
 const balance = ref(0);
 
 onShow(async () => {
-  const userId = sheep.$store('user').userInfo?.id;
-  if (!userId) return;
+  // 2026-10-07 修复：原实现先取 sheep.$store('user').userInfo?.id，取不到就 return。
+  // userId 由后端登录态注入、前端不需要（API 注释也写明"前端不传 userId"）；
+  // H5 下该 store 取不到值时会静默跳过【整段 onShow】→「我的」页永远停在「加载中…」（实测）。
+  // 未登录时接口自身会返回 401，无需前端兜底。
   const bindRes = await RestaurantMemberApi.bind();
   if (bindRes.code === 0) {
     const getRes = await RestaurantMemberApi.get();
